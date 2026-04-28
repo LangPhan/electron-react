@@ -44,8 +44,12 @@
     "vite": "^5.4.21"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "electron-squirrel-startup": "^1.0.1",
+    "openai": "^6.34.0",
+    "pdfjs-dist": "^5.7.284",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "tesseract.js": "^7.0.0"
   }
 }
