@@ -6,6 +6,12 @@ import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("electronAPI", {
   openFile: () => ipcRenderer.invoke("open-file-dialog"),
 
+  loadStoredSession: () =>
+    ipcRenderer.invoke("load-stored-session"),
+
+  saveStoredSession: (session: unknown) =>
+    ipcRenderer.invoke("save-stored-session", session),
+
   getFileData: (filePath: string) =>
     ipcRenderer.invoke("get-file-data", filePath),
 
@@ -17,4 +23,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   exportText: (text: string, defaultName: string) =>
     ipcRenderer.invoke("export-text", text, defaultName),
+
+  correctWithGroq: (
+    apiKey: string,
+    model: string,
+    imageDataUrl: string,
+    rawOcrText: string,
+  ) =>
+    ipcRenderer.invoke("groq-correct-text", {
+      apiKey,
+      model,
+      imageDataUrl,
+      rawOcrText,
+    }),
 });

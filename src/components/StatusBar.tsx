@@ -18,9 +18,9 @@ export default function StatusBar({ engineStatus, fileName, fileSize, pageInfo }
       <div className="status-bar-left">
         <span className={`server-status ${engineStatus}`}>
           <span className="status-dot-sm" />
-          {engineStatus === "initializing" && "Initializing OCR Engine..."}
-          {engineStatus === "ready" && "OCR Engine Ready"}
-          {engineStatus === "error" && "OCR Engine Error"}
+          {engineStatus === "initializing" && "Đang khởi tạo OCR..."}
+          {engineStatus === "ready" && "OCR đã sẵn sàng"}
+          {engineStatus === "error" && "Lỗi OCR"}
         </span>
       </div>
       <div className="status-bar-right">

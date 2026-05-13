@@ -1,5 +1,8 @@
+import {
+  GROQ_MODEL_OPTIONS,
+  type GroqModel,
+} from "@/lib/aiCorrector";
 import { useState } from "react";
-import type { AIProvider } from "@/lib/aiCorrector";
 
 interface ToolbarProps {
   onNewParsing: () => void;
@@ -8,23 +11,24 @@ interface ToolbarProps {
   isProcessing: boolean;
   hasFile: boolean;
   hasResult: boolean;
-  aiProvider: AIProvider;
-  geminiApiKey: string;
-  openaiApiKey: string;
-  qwenApiKey: string;
+  groqApiKey: string;
+  groqModel: GroqModel;
   useAI: boolean;
-  onSetAIProvider: (provider: AIProvider) => void;
-  onSetGeminiKey: (key: string) => void;
-  onSetOpenaiKey: (key: string) => void;
-  onSetQwenKey: (key: string) => void;
-  onToggleAI: (enabled: boolean) => void;
+  onSetGroqKey: (key: string) => void;
+  onSetGroqModel: (
+    model: GroqModel,
+  ) => void;
+  onToggleAI: (
+    enabled: boolean,
+  ) => void;
 }
 
-const PROVIDER_LABELS: Record<AIProvider, string> = {
-  gemini: "Gemini",
-  openai: "ChatGPT",
-  qwen: "Qwen",
-};
+const getModelLabel = (
+  modelId: GroqModel,
+) =>
+  GROQ_MODEL_OPTIONS.find(
+    (model) => model.id === modelId,
+  )?.label ?? "Groq";
 
 export default function Toolbar({
   onNewParsing,
@@ -33,75 +37,121 @@ export default function Toolbar({
   isProcessing,
   hasFile,
   hasResult,
-  aiProvider,
-  geminiApiKey,
-  openaiApiKey,
-  qwenApiKey,
+  groqApiKey,
+  groqModel,
   useAI,
-  onSetAIProvider,
-  onSetGeminiKey,
-  onSetOpenaiKey,
-  onSetQwenKey,
+  onSetGroqKey,
+  onSetGroqModel,
   onToggleAI,
 }: ToolbarProps) {
-  const [showSettings, setShowSettings] = useState(false);
-  const [geminiInput, setGeminiInput] = useState(geminiApiKey);
-  const [openaiInput, setOpenaiInput] = useState(openaiApiKey);
-  const [qwenInput, setQwenInput] = useState(qwenApiKey);
+  const [
+    showSettings,
+    setShowSettings,
+  ] = useState(false);
+  const [groqInput, setGroqInput] =
+    useState(groqApiKey);
+  const [
+    selectedModel,
+    setSelectedModel,
+  ] = useState<GroqModel>(groqModel);
 
-  const handleSaveKeys = () => {
-    onSetGeminiKey(geminiInput.trim());
-    onSetOpenaiKey(openaiInput.trim());
-    onSetQwenKey(qwenInput.trim());
+  const handleSaveSettings = () => {
+    onSetGroqKey(groqInput.trim());
+    onSetGroqModel(selectedModel);
     setShowSettings(false);
   };
 
-  const hasActiveKey =
-    (aiProvider === "gemini" && !!geminiApiKey) ||
-    (aiProvider === "openai" && !!openaiApiKey) ||
-    (aiProvider === "qwen" && !!qwenApiKey);
+  const hasActiveKey = !!groqApiKey;
+  const activeModelLabel =
+    getModelLabel(groqModel);
 
   return (
     <header className="toolbar">
       <div className="toolbar-left">
         <div className="app-logo">
-          <div className="logo-icon">OCR</div>
-          <span className="app-name">Document Parser</span>
+          <div className="logo-icon">
+            OCR
+          </div>
+          <span className="app-name">
+            ĐẠT AN OCR
+          </span>
         </div>
 
-        <button className="toolbar-btn primary" onClick={onNewParsing} disabled={isProcessing}>
-          <span className="btn-icon">+</span>
-          New Parsing
+        <button
+          className="toolbar-btn primary"
+          onClick={onNewParsing}
+          disabled={isProcessing}
+        >
+          <span className="btn-icon">
+            +
+          </span>
+          Thêm tài liệu
         </button>
 
-        <button className="toolbar-btn accent" onClick={onStartOCR} disabled={isProcessing || !hasFile}>
+        <button
+          className="toolbar-btn accent"
+          onClick={onStartOCR}
+          disabled={
+            isProcessing || !hasFile
+          }
+        >
           {isProcessing ? (
-            <><div className="spinner-small" /> Processing...</>
+            <>
+              <div className="spinner-small" />{" "}
+              Đang xử lý...
+            </>
           ) : (
-            <><span className="btn-icon">▶</span> Start Parsing</>
+            <>
+              <span className="btn-icon">
+                OCR
+              </span>{" "}
+              Bắt đầu
+            </>
           )}
         </button>
 
         {hasResult && (
-          <button className="toolbar-btn secondary" onClick={onExportText}>
-            <span className="btn-icon">💾</span>
-            Export .txt
+          <button
+            className="toolbar-btn secondary"
+            onClick={onExportText}
+          >
+            <span className="btn-icon">
+              TXT
+            </span>
+            Xuất .txt
           </button>
         )}
       </div>
 
       <div className="toolbar-right">
-        {/* AI toggle */}
-        <label className="gemini-toggle" title={useAI ? `AI correction: ${PROVIDER_LABELS[aiProvider]}` : "AI correction disabled"}>
+        <label
+          className="ai-toggle"
+          title={
+            useAI
+              ? `Sửa lỗi bằng AI: ${activeModelLabel}`
+              : "Đã tắt sửa lỗi bằng AI"
+          }
+        >
           <input
             type="checkbox"
             checked={useAI}
-            onChange={(e) => onToggleAI(e.target.checked)}
+            onChange={(e) =>
+              onToggleAI(
+                e.target.checked,
+              )
+            }
             disabled={!hasActiveKey}
           />
           <span className="toggle-slider" />
           <span className="toggle-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
@@ -110,138 +160,145 @@ export default function Toolbar({
           </span>
         </label>
 
-        {/* Settings button */}
         <button
           className="toolbar-btn icon-btn"
-          onClick={() => setShowSettings(!showSettings)}
-          title="Settings"
+          onClick={() =>
+            setShowSettings(
+              !showSettings,
+            )
+          }
+          title="Cài đặt"
         >
-          ⚙️
+          Cài đặt
         </button>
 
         <div className="engine-badge">
-          <span>Tesseract{useAI ? ` + ${PROVIDER_LABELS[aiProvider]}` : ""}</span>
+          <span>
+            Tesseract
+            {useAI
+              ? ` + ${activeModelLabel}`
+              : ""}
+          </span>
         </div>
 
         {hasResult && (
           <span className="status-indicator done">
             <span className="status-dot" />
-            Complete
+            Hoàn tất
           </span>
         )}
       </div>
 
-      {/* Settings dropdown */}
       {showSettings && (
         <div className="settings-dropdown">
-          <div className="settings-overlay" onClick={() => setShowSettings(false)} />
+          <div
+            className="settings-overlay"
+            onClick={() =>
+              setShowSettings(false)
+            }
+          />
           <div className="settings-panel">
-            <h3>⚙️ AI Settings</h3>
+            <h3>Cài đặt AI</h3>
 
-            {/* Provider selection */}
             <div className="setting-group">
-              <label className="setting-label">AI Provider</label>
-              <div className="provider-tabs">
-                <button
-                  className={`provider-tab ${aiProvider === "gemini" ? "active" : ""}`}
-                  onClick={() => onSetAIProvider("gemini")}
+              <label className="setting-label">
+                Khóa API Groq
+                <span className="active-badge">
+                  Đang dùng
+                </span>
+              </label>
+              <p className="setting-hint">
+                <a
+                  href="https://console.groq.com/keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <span className="provider-icon">✨</span>
-                  Gemini
-                </button>
-                <button
-                  className={`provider-tab ${aiProvider === "openai" ? "active" : ""}`}
-                  onClick={() => onSetAIProvider("openai")}
-                >
-                  <span className="provider-icon">🤖</span>
-                  ChatGPT
-                </button>
-                <button
-                  className={`provider-tab ${aiProvider === "qwen" ? "active" : ""}`}
-                  onClick={() => onSetAIProvider("qwen")}
-                >
-                  <span className="provider-icon">🌐</span>
-                  Qwen
-                </button>
+                  console.groq.com
+                </a>
+              </p>
+              <input
+                type="password"
+                className="setting-input"
+                value={groqInput}
+                onChange={(e) =>
+                  setGroqInput(
+                    e.target.value,
+                  )
+                }
+                placeholder="gsk_..."
+              />
+            </div>
+
+            <div className="setting-group">
+              <label className="setting-label">
+                Model Groq
+              </label>
+              <div className="model-tabs">
+                {GROQ_MODEL_OPTIONS.map(
+                  (model) => (
+                    <button
+                      key={model.id}
+                      className={`model-tab ${selectedModel === model.id ? "active" : ""}`}
+                      onClick={() =>
+                        setSelectedModel(
+                          model.id,
+                        )
+                      }
+                    >
+                      <span className="model-icon">
+                        G
+                      </span>
+                      <span>
+                        <span>
+                          {model.label}
+                        </span>
+                        <span className="model-tab-description">
+                          {
+                            model.description
+                          }
+                        </span>
+                      </span>
+                    </button>
+                  ),
+                )}
               </div>
             </div>
 
-            {/* Gemini API Key */}
-            <div className="setting-group">
-              <label className="setting-label">
-                Gemini API Key
-                {aiProvider === "gemini" && <span className="active-badge">Active</span>}
-              </label>
-              <p className="setting-hint">
-                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">
-                  aistudio.google.com
-                </a>
-              </p>
-              <input
-                type="password"
-                className="setting-input"
-                value={geminiInput}
-                onChange={(e) => setGeminiInput(e.target.value)}
-                placeholder="AIzaSy..."
-              />
-            </div>
-
-            {/* OpenAI API Key */}
-            <div className="setting-group">
-              <label className="setting-label">
-                OpenAI API Key
-                {aiProvider === "openai" && <span className="active-badge">Active</span>}
-              </label>
-              <p className="setting-hint">
-                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">
-                  platform.openai.com
-                </a>
-              </p>
-              <input
-                type="password"
-                className="setting-input"
-                value={openaiInput}
-                onChange={(e) => setOpenaiInput(e.target.value)}
-                placeholder="sk-..."
-              />
-            </div>
-
-            {/* Qwen API Key */}
-            <div className="setting-group">
-              <label className="setting-label">
-                Qwen (DashScope) API Key
-                {aiProvider === "qwen" && <span className="active-badge">Active</span>}
-              </label>
-              <p className="setting-hint">
-                <a href="https://modelstudio.console.alibabacloud.com/" target="_blank" rel="noopener noreferrer">
-                  Alibaba Model Studio
-                </a>
-              </p>
-              <input
-                type="password"
-                className="setting-input"
-                value={qwenInput}
-                onChange={(e) => setQwenInput(e.target.value)}
-                placeholder="sk-..."
-              />
-            </div>
-
-            <button className="toolbar-btn accent save-btn" onClick={handleSaveKeys}>
-              Save Settings
+            <button
+              className="toolbar-btn accent save-btn"
+              onClick={
+                handleSaveSettings
+              }
+            >
+              Lưu cài đặt
             </button>
 
-            <div className="setting-group" style={{ marginTop: 12 }}>
+            <div
+              className="setting-group"
+              style={{ marginTop: 12 }}
+            >
               <label className="setting-label">
                 <input
                   type="checkbox"
                   checked={useAI}
-                  onChange={(e) => onToggleAI(e.target.checked)}
-                  disabled={!hasActiveKey}
-                />
-                {" "}Enable AI text correction
+                  onChange={(e) =>
+                    onToggleAI(
+                      e.target.checked,
+                    )
+                  }
+                  disabled={
+                    !hasActiveKey
+                  }
+                />{" "}
+                Bật sửa lỗi văn bản bằng
+                AI
               </label>
               <p className="setting-hint">
-                After Tesseract OCR, sends image + text to AI to fix Vietnamese diacritics and OCR errors.
+                Sau khi OCR bằng
+                Tesseract, gửi ảnh và
+                văn bản sang Groq để sửa
+                dấu tiếng Việt và lỗi
+                nhận dạng.
               </p>
             </div>
           </div>
