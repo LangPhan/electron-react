@@ -36,10 +36,18 @@ export async function renderPdfPageToDataUrl(
   const canvas = document.createElement("canvas");
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
+  const canvasContext =
+    canvas.getContext("2d");
+  if (!canvasContext) {
+    doc.destroy();
+    throw new Error(
+      "Failed to prepare PDF preview canvas",
+    );
+  }
 
   await page.render({
     canvas,
-    canvasContext: canvas.getContext("2d")!,
+    canvasContext,
     viewport,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any).promise;
@@ -67,10 +75,18 @@ export async function renderPdfPageToBlob(
   const canvas = document.createElement("canvas");
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
+  const canvasContext =
+    canvas.getContext("2d");
+  if (!canvasContext) {
+    doc.destroy();
+    throw new Error(
+      "Failed to prepare PDF OCR canvas",
+    );
+  }
 
   await page.render({
     canvas,
-    canvasContext: canvas.getContext("2d")!,
+    canvasContext,
     viewport,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any).promise;

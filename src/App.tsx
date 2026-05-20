@@ -12,6 +12,11 @@ import {
 import * as ocrEngine from "@/lib/ocrEngine";
 import * as pdfUtils from "@/lib/pdfUtils";
 import {
+  applyImageEdits,
+  DEFAULT_IMAGE_EDITS,
+  type ImageEditOptions,
+} from "@/lib/imageEdit";
+import {
   FileInfo,
   OCRResult,
 } from "@/types";
@@ -36,6 +41,12 @@ function App() {
     useState<string | null>(null);
   const [fileLoading, setFileLoading] =
     useState(false);
+  const [
+    imageEditsByPath,
+    setImageEditsByPath,
+  ] = useState<
+    Record<string, ImageEditOptions>
+  >({});
 
   // OCR state
   const [ocrResult, setOcrResult] =
@@ -550,9 +561,16 @@ function App() {
                 buffer,
                 i,
               );
+            const editedPageBlob =
+              await applyImageEdits(
+                pageBlob,
+                imageEditsByPath[
+                  processingFile.path
+                ] ?? DEFAULT_IMAGE_EDITS,
+              );
             const result =
               await ocrEngine.processImage(
-                pageBlob,
+                editedPageBlob,
               );
 
             if (
@@ -567,7 +585,7 @@ function App() {
               try {
                 result.text =
                   await aiCorrector.correctText(
-                    pageBlob,
+                    editedPageBlob,
                     result.text,
                   );
               } catch (err) {
@@ -631,9 +649,16 @@ function App() {
                 "image/png",
             },
           );
+          const editedBlob =
+            await applyImageEdits(
+              blob,
+              imageEditsByPath[
+                processingFile.path
+              ] ?? DEFAULT_IMAGE_EDITS,
+            );
           const result =
             await ocrEngine.processImage(
-              blob,
+              editedBlob,
             );
 
           if (
@@ -648,7 +673,7 @@ function App() {
             try {
               result.text =
                 await aiCorrector.correctText(
-                  blob,
+                  editedBlob,
                   result.text,
                 );
             } catch (err) {
@@ -694,6 +719,7 @@ function App() {
       pdfBuffer,
       useAI,
       ocrResultsByPath,
+      imageEditsByPath,
     ]);
 
   // Export
@@ -763,6 +789,27 @@ function App() {
     },
     [totalPages],
   );
+
+  const handleImageEditsChange =
+    useCallback(
+      (edits: ImageEditOptions) => {
+        if (!selectedFile) return;
+
+        setImageEditsByPath((prev) => ({
+          ...prev,
+          [selectedFile.path]: edits,
+        }));
+        setOcrResultsByPath((prev) => {
+          if (!prev[selectedFile.path])
+            return prev;
+          const next = { ...prev };
+          delete next[selectedFile.path];
+          return next;
+        });
+        setOcrResult(null);
+      },
+      [selectedFile],
+    );
 
   return (
     <div
@@ -843,6 +890,17 @@ function App() {
               handlePageChange
             }
             isLoading={fileLoading}
+            imageEdits={
+              selectedFile
+                ? (imageEditsByPath[
+                    selectedFile.path
+                  ] ??
+                  DEFAULT_IMAGE_EDITS)
+                : DEFAULT_IMAGE_EDITS
+            }
+            onImageEditsChange={
+              handleImageEditsChange
+            }
           />
           <div className="panel-divider" />
           <ResultPanel

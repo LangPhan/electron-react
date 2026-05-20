@@ -439,13 +439,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 6px 16px;
   background: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.zoom-controls {
+.zoom-controls,
+.edit-controls {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -465,9 +468,47 @@ body {
   transition: all var(--transition);
   font-family: inherit;
 }
-.zoom-btn:hover {
+.zoom-btn:hover:not(:disabled) {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+.zoom-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-surface));
+  color: var(--accent-hover);
+}
+.zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rotation-value {
+  min-width: 34px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.crop-reset-btn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  font: inherit;
+  font-size: 11px;
+}
+.crop-reset-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.crop-reset-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .zoom-value {
@@ -534,6 +575,33 @@ body {
 
 .image-container {
   transition: transform 0.15s ease;
+}
+
+.image-edit-preview {
+  display: inline-block;
+  position: relative;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+}
+
+.crop-overlay {
+  position: absolute;
+  inset: 1px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  pointer-events: none;
+}
+.crop-overlay.active {
+  cursor: crosshair;
+  pointer-events: auto;
+}
+.crop-selection {
+  position: absolute;
+  border: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.42);
+  min-width: 8px;
+  min-height: 8px;
 }
 
 .source-image {

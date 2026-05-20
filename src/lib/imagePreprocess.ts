@@ -64,7 +64,7 @@ function toGrayscale(
  */
 function enhanceContrast(
   data: Uint8ClampedArray,
-  factor: number = 1.5,
+  factor = 1.5,
 ): void {
   // Find min and max luminance
   let min = 255;
@@ -114,8 +114,8 @@ function adaptiveThreshold(
   data: Uint8ClampedArray,
   width: number,
   height: number,
-  blockSize: number = 15,
-  C: number = 10,
+  blockSize = 15,
+  C = 10,
 ): void {
   // Create integral image for fast local mean computation
   const integral = new Float64Array(
@@ -323,7 +323,12 @@ export async function preprocessImage(
   canvas.height = height;
   const ctx = canvas.getContext("2d", {
     willReadFrequently: true,
-  })!;
+  });
+  if (!ctx) {
+    throw new Error(
+      "Failed to prepare preprocessing canvas",
+    );
+  }
 
   // Use better interpolation for upscaling
   if (scale > 1) {
@@ -339,7 +344,7 @@ export async function preprocessImage(
     width,
     height,
   );
-  let imageData = ctx.getImageData(
+  const imageData = ctx.getImageData(
     0,
     0,
     width,
